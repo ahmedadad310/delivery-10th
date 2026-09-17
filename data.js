@@ -82,7 +82,7 @@ const DEFAULT_USERS = [
     id: 'admin1',
     name: 'مدير النظام',
     phone: '01118855325',
-    password: 'ahmedayesh7111994',
+    password: '123',
     role: 'admin',
     avatar: 'https://ui-avatars.com/api/?name=Admin&background=7c3aed&color=fff'
   },
