@@ -4,45 +4,73 @@ Storage.init();
 let currentUser = null;
 let pickupMap = null, dropoffMap = null, trackMap = null, adminMap = null;
 let pickupMarker = null, dropoffMarker = null;
-let mapsInitialized = { pickup: false, dropoff: false, track: false, admin: false };
+
+let mapsInitialized = {
+  pickup: false,
+  dropoff: false,
+  track: false,
+  admin: false
+};
 
 // ========== تهيئة ==========
 document.addEventListener('DOMContentLoaded', () => {
+
   setTimeout(() => {
     document.getElementById('splash').classList.add('hide');
     document.getElementById('app').classList.remove('hidden');
+
     const saved = sessionStorage.getItem('delivery_session');
 
-if (saved) {
-  try {
-    const sessionUser = JSON.parse(saved);
+    if (saved) {
+      try {
+        const sessionUser = JSON.parse(saved);
+        const users = Storage.get('users', []);
 
-    // نتحقق أن المستخدم ما زال موجوداً وأن بياناته الحالية
-    // مطابقة للبيانات الموجودة في Storage
-    const users = Storage.get('users', []);
-    const freshUser = users.find(u => u.id === sessionUser.id);
+        const freshUser = users.find(
+          u => u.id === sessionUser.id
+        );
 
-    if (freshUser && !freshUser.blocked) {
-      currentUser = freshUser;
+        if (freshUser && !freshUser.blocked) {
 
-      // تحديث الجلسة بالبيانات الحالية
-      sessionStorage.setItem(
-        'delivery_session',
-        JSON.stringify(freshUser)
-      );
+          currentUser = freshUser;
 
-      showScreenForRole(freshUser.role);
-    } else {
-      // جلسة قديمة أو مستخدم لم يعد موجوداً
-      sessionStorage.removeItem('delivery_session');
-      currentUser = null;
+          sessionStorage.setItem(
+            'delivery_session',
+            JSON.stringify(freshUser)
+          );
+
+          showScreenForRole(freshUser.role);
+
+        } else {
+
+          sessionStorage.removeItem('delivery_session');
+          currentUser = null;
+
+          document.querySelectorAll('.screen').forEach(
+            s => s.classList.remove('active')
+          );
+
+          document.getElementById('auth-screen')?.classList.add('active');
+        }
+
+      } catch (error) {
+
+        console.error(
+          'Invalid delivery session:',
+          error
+        );
+
+        sessionStorage.removeItem('delivery_session');
+        currentUser = null;
+
+        document.querySelectorAll('.screen').forEach(
+          s => s.classList.remove('active')
+        );
+
+        document.getElementById('auth-screen')?.classList.add('active');
+      }
     }
-  } catch (error) {
-    console.error('Invalid saved session:', error);
-    sessionStorage.removeItem('delivery_session');
-    currentUser = null;
-  }
-}
+
   }, 1800);
 
   setupAuth();
