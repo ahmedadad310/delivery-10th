@@ -12,10 +12,37 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('splash').classList.add('hide');
     document.getElementById('app').classList.remove('hidden');
     const saved = sessionStorage.getItem('delivery_session');
-    if (saved) {
-      currentUser = JSON.parse(saved);
-      showScreenForRole(currentUser.role);
+
+if (saved) {
+  try {
+    const sessionUser = JSON.parse(saved);
+
+    // نتحقق أن المستخدم ما زال موجوداً وأن بياناته الحالية
+    // مطابقة للبيانات الموجودة في Storage
+    const users = Storage.get('users', []);
+    const freshUser = users.find(u => u.id === sessionUser.id);
+
+    if (freshUser && !freshUser.blocked) {
+      currentUser = freshUser;
+
+      // تحديث الجلسة بالبيانات الحالية
+      sessionStorage.setItem(
+        'delivery_session',
+        JSON.stringify(freshUser)
+      );
+
+      showScreenForRole(freshUser.role);
+    } else {
+      // جلسة قديمة أو مستخدم لم يعد موجوداً
+      sessionStorage.removeItem('delivery_session');
+      currentUser = null;
     }
+  } catch (error) {
+    console.error('Invalid saved session:', error);
+    sessionStorage.removeItem('delivery_session');
+    currentUser = null;
+  }
+}
   }, 1800);
 
   setupAuth();
